@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import os
-
 import httpx
+
+from mcp_retell.config import get_settings
 
 
 class RetellClient:
     """Manages httpx client for Retell AI API.
 
-    Reads credentials from environment variables:
-    - RETELL_API_KEY
-    - RETELL_BASE_URL (default: https://api.retellai.com)
+    Configuration is loaded from environment variables (RETELL_* prefix)
+    or a .env file via Pydantic Settings. Explicit constructor params
+    override settings values.
     """
 
     def __init__(
@@ -20,8 +20,9 @@ class RetellClient:
         api_key: str | None = None,
         base_url: str | None = None,
     ) -> None:
-        self.api_key = (api_key or os.environ.get("RETELL_API_KEY", "")).strip()
-        self.base_url = (base_url or os.environ.get("RETELL_BASE_URL", "https://api.retellai.com")).strip()
+        settings = get_settings()
+        self.api_key = (api_key or settings.api_key).strip()
+        self.base_url = (base_url or settings.base_url).strip()
 
     def _headers(self) -> dict[str, str]:
         return {
